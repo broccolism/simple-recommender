@@ -33,7 +33,12 @@ def get_cmd_args():
     return 0
 
 
-def first_scan():
+def init_data():
+    scan_train_data()
+    reshape_train_data()
+
+
+def scan_train_data():
     global train_data, uid_list, mid_list
     train_data = np.empty((0, 4), dtype=int)
     with open(train_name) as file:
@@ -44,12 +49,33 @@ def first_scan():
 
 def reshape_train_data():
     global train_data
-    # TODO reshape as a 2-d array with -1 for unknown ratings
+
+    new_data = np.full([MAX_MID + 1, MAX_MID + 1], -1)
+
+    for tuple in train_data:
+        new_data[uid(tuple), mid(tuple)] = rating(tuple)
+
+    train_data = new_data
     return
+
+
+def uid(t):
+    return t[0]
+
+
+def mid(t):
+    return t[1]
+
+
+def rating(t):
+    return t[2]
+
+
+def rating_and_time_from_tuple(t):
+    return np.array([t[2], t[3]])
 
 
 if __name__ == "__main__":
     if get_cmd_args() == -1:
         exit()
-    first_scan()
-    reshape_train_data()
+    init_data()
