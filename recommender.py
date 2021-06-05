@@ -74,10 +74,6 @@ def pre_use_preference():
     return pre_use
 
 
-def gradient_descent(matrix):
-    U = np.array()
-
-
 def SVD():
 
     return
@@ -104,6 +100,9 @@ if __name__ == "__main__":
         exit()
     init_data()
 
-    pre_use_matrix = pre_use_preference()
-    factorizer = Factorizer(pre_use_matrix, 3, 0.02)
-    factorizer.train()
+    P = pre_use_preference()
+    factorizer = Factorizer(P, 2, 0.01, 0.01, 0.002)
+    predicted_P = factorizer.train()
+    print(P)
+    print("predicted:")
+    print(predicted_P)

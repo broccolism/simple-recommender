@@ -3,6 +3,7 @@
 # 2018008513 Son Young-in
 
 import numpy as np
+from numpy.core.fromnumeric import mean
 
 MAX_UID = 943
 MAX_MID = 1682
@@ -14,44 +15,50 @@ UNKNOWN_RATING = -1
 
 
 class Factorizer:
-    def __init__(self, P, k, r_lambda):
+    def __init__(self, P, k, alpha, beta, threshold):
         self.P = P
         self.k = k
-        self.r_lambda = r_lambda
+        self.alpha = alpha
+        self.beta = beta
+        self.threshold = threshold
         self.X = np.random.normal(size=(N_UID, self.k))
         self.Y = np.random.normal(size=(N_MID, self.k))
-        self.init_W()
+        self.init_bias()
 
-    def init_W(self):
-        self.W = np.zeros(shape=(N_UID, N_MID))
-        for i in range(N_UID):
-            for j in range(N_MID):
-                nonzero_ratio = len(np.nonzero(self.P[i])) / N_MID
-                if self.P[i, j] > 0:
-                    self.W[i, j] = 1
-                else:
-                    self.W[i, j] = nonzero_ratio
+    def init_bias(self):
+        self.B_user = np.zeros(N_UID)
+        self.B_movie = np.zeros(N_MID)
+        self.b_global = np.mean(self.P[np.nonzero(self.P)])
+
+    def mean_err(self):
+        rows, cols = np.nonzero(self.P)
+        predicted = self.get_full_prediction()
+        err_sum = 0
+        for row, col in zip(rows, cols):
+            err_sum += np.power((self.P[row, col] - predicted[row, col]), 2)
+        return np.sqrt(err_sum) / len(rows)
 
     def train(self):
-        X = self.update_X(self.X, self.Y)
-        print(X)
-        return
+        for i in range(10):
+            self.update()
+            cur_err = self.mean_err()
+            print(round(cur_err, 10))
+        return self.get_full_prediction()
 
-    def update_X(self, X, Y):
+    def update(self):
         for i in range(N_UID):
-            W_ = np.diag(self.W[i])
-            RiWiV = np.matmul(np.matmul(self.P[i], W_), Y)
-            VtWiV = np.matmul(np.matmul(np.transpose(Y), W_), Y)
-            lambdaWI = self.r_lambda * np.sum(self.W[i]) * np.identity(self.k)
-            inversed = np.linalg.inv((VtWiV + lambdaWI))
+            for j in range(N_MID):
+                err = self.P[i, j] - self.get_predicted_rating(i, j)
 
-            X[i] = np.linalg.solve(RiWiV, inversed)
-            print(X[i])
-        print(X)
-        return X
+                self.B_user[i] += self.alpha * (err - self.beta * self.B_user[i])
+                self.B_movie[j] += self.alpha * (err - self.beta * self.B_movie[j])
 
-    def update_Y(self, X, Y):
-        return
+                X_i = self.X[i, :][:]
+                self.X[i, :] += self.alpha * (err * self.Y[j, :] - self.beta * self.X[i, :])
+                self.Y[j, :] += self.alpha * (err * X_i - self.beta * self.Y[j, :])
 
-    def get_full_prediciton(self):
-        return
+    def get_predicted_rating(self, i, j):
+        return np.dot(self.X[i, :], self.Y[j, :].T) + self.b_global + self.B_user[i] + self.B_movie[j]
+
+    def get_full_prediction(self):
+        return np.dot(self.X, self.Y.T) + self.b_global + self.B_user[:, np.newaxis] + self.B_movie[np.newaxis, :]
