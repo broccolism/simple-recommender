@@ -95,14 +95,33 @@ def get_rating_and_time_from_tuple(t):
     return np.array([t[2], t[3]])
 
 
+def put_zero(M, percentile):
+    global TRAIN_DATA
+    until = int(N_MID * percentile)
+    for i in range(N_UID):
+        count = 0
+        tuples = [(j, M[i, j]) for j in range(N_MID)]
+        tuples_sorted = sorted(tuples, key=lambda tup: tup[1], reverse=True)
+
+        for j, _ in tuples_sorted:
+            if TRAIN_DATA[i, j] == UNKNOWN_RATING:
+                TRAIN_DATA[i, j] = 0
+            count += 1
+            if count == until:
+                break
+
+    print(f"put zero injected total {count} of zeros.")
+    return M
+
+
 if __name__ == "__main__":
     if get_cmd_args() == -1:
         exit()
     init_data()
 
     P = pre_use_preference()
-    factorizer = Factorizer(P, 2, 0.01, 0.01, 0.002)
-    predicted_P = factorizer.train()
-    print(P)
-    print("predicted:")
-    print(predicted_P)
+    pre_factorizer = Factorizer(P, 10, 0.005, 0.05, 30)
+    predicted_P = pre_factorizer.do_factorize()
+
+    with np.printoptions(threshold=np.inf):
+        predicted_P = put_zero(predicted_P, 0.5)
