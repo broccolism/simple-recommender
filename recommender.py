@@ -11,11 +11,11 @@ MAX_UID = 943
 MAX_MID = 1682
 N_UID = 944
 N_MID = 1683
-UNKNOWN_RATING = -1
+UNKNOWN_RATING = 0
 
 TRAIN_NAME = ""
 TEST_NAME = ""
-TRAIN_DATA = []
+RATINGS = []
 UID_LIST = []
 MID_LIST = []
 
@@ -42,40 +42,23 @@ def init_data():
 
 
 def scan_train_data():
-    global TRAIN_DATA, UID_LIST, MID_LIST
-    TRAIN_DATA = np.empty((0, 4), dtype=int)
+    global RATINGS, UID_LIST, MID_LIST
+    RATINGS = np.empty((0, 4), dtype=int)
     with open(TRAIN_NAME) as file:
         for line in file.readlines():
             char_in_line = line.rstrip().split('\t')
-            TRAIN_DATA = np.vstack((TRAIN_DATA, [int(char) for char in char_in_line]))
+            RATINGS = np.vstack((RATINGS, [int(char) for char in char_in_line]))
 
 
 def reshape_train_data():
-    global TRAIN_DATA
+    global RATINGS
 
-    new_data = np.full([N_UID, N_MID], -1)
+    new_data = np.full([N_UID, N_MID], UNKNOWN_RATING)
 
-    for tuple in TRAIN_DATA:
+    for tuple in RATINGS:
         new_data[get_uid(tuple), get_mid(tuple)] = get_rating(tuple)
 
-    TRAIN_DATA = new_data
-    return
-
-
-def pre_use_preference():
-    pre_use = TRAIN_DATA.copy()
-
-    for uid in range(N_UID):
-        for mid in range(N_MID):
-            if pre_use[uid, mid] > 0:
-                pre_use[uid, mid] = 1
-            else:
-                pre_use[uid, mid] = 0
-    return pre_use
-
-
-def SVD():
-
+    RATINGS = new_data
     return
 
 
@@ -91,27 +74,20 @@ def get_rating(t):
     return t[2]
 
 
-def get_rating_and_time_from_tuple(t):
-    return np.array([t[2], t[3]])
+def print_output(predicted):
+    file_name = f"{TRAIN_NAME.split('.')[0]}.base_prediction.txt"
+    with open(file_name, 'w') as output, open(TEST_NAME) as test:
+        for line in test.readlines():
+            char_in_line = line.rstrip().split('\t')
+            uid = int(get_uid(char_in_line))
+            mid = int(get_mid(char_in_line))
+            rating = predicted[uid, mid]
+            print_one_line(output, uid, mid, rating if rating > 0 else 1.)
 
 
-def put_zero(M, percentile):
-    global TRAIN_DATA
-    until = int(N_MID * percentile)
-    for i in range(N_UID):
-        count = 0
-        tuples = [(j, M[i, j]) for j in range(N_MID)]
-        tuples_sorted = sorted(tuples, key=lambda tup: tup[1], reverse=True)
-
-        for j, _ in tuples_sorted:
-            if TRAIN_DATA[i, j] == UNKNOWN_RATING:
-                TRAIN_DATA[i, j] = 0
-            count += 1
-            if count == until:
-                break
-
-    print(f"put zero injected total {count} of zeros.")
-    return M
+def print_one_line(file, uid, mid, rating):
+    line = f"{uid}\t{mid}\t{rating}\n"
+    file.write(line)
 
 
 if __name__ == "__main__":
@@ -119,9 +95,6 @@ if __name__ == "__main__":
         exit()
     init_data()
 
-    P = pre_use_preference()
-    pre_factorizer = Factorizer(P, 10, 0.005, 0.05, 30)
-    predicted_P = pre_factorizer.do_factorize()
-
-    with np.printoptions(threshold=np.inf):
-        predicted_P = put_zero(predicted_P, 0.5)
+    second_factorizer = Factorizer(RATINGS, 10, 0.005, 0.05, 100)
+    predicted = second_factorizer.do_factorize()
+    print_output(predicted)

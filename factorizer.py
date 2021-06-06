@@ -11,13 +11,12 @@ N_MID = 1683
 
 
 class Factorizer():
-    def __init__(self, ratings, k, learning_rate, reg_param, iteration, verbose=True):
-        self.R = ratings
+    def __init__(self, ratings, k, learning_rate, reg_param, iteration):
+        self.R = ratings.copy()
         self.k = k
         self.learning_rate = learning_rate
         self.reg_param = reg_param
         self.iteration = iteration
-        self.verbose = verbose
         self.init_more()
 
     def init_more(self):
@@ -39,13 +38,7 @@ class Factorizer():
 
     def train(self):
         for i in range(self.iteration):
-            np.random.shuffle(self.nonzero_ratings)
             self.update()
-            error = self.get_error()
-
-            if self.verbose:
-                if (i+1) % 10 == 0:
-                    print("Iteration: %d : Train get_error = %.4f " % (i+1, error))
 
     def get_error(self):
         rows, cols = self.R.nonzero()
