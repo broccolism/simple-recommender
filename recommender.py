@@ -95,6 +95,9 @@ if __name__ == "__main__":
         exit()
     init_data()
 
-    second_factorizer = Factorizer(RATINGS, 10, 0.005, 0.05, 100)
-    predicted = second_factorizer.do_factorize()
+    factorizer = Factorizer(RATINGS, 10, 0.005, 0.05, 100)
+    # 0.005, 0.05 - 1000: 0.96 (34m) # 100: 0.924776 (2m), 0.9344228 (2m)
+    # 0.002, 0.05 - 100: 0.9533, 0.9491, 0.9508899
+    predicted = factorizer.do_factorize()
     print_output(predicted)
+    print("DONE!")
