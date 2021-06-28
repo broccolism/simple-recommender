@@ -1,0 +1,7 @@
+# simple recommendation system
+
+- data: [movielens 1M](https://grouplens.org/datasets/movielens/1m/)
+
+### item-based
+
+- Item-based collaborative filtering using adjusted cosine similarity
