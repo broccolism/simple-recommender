@@ -5,3 +5,6 @@
 ### item-based
 
 - Item-based collaborative filtering using adjusted cosine similarity
+  |버전|RMSE|소요시간|
+  |--:|:--:|:--:|
+  |ver.1|1.042|4m 36s|

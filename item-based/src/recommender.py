@@ -47,17 +47,6 @@ def cosine_sim(a, b):
 
 def adj_cosine_sim(train_data):
     sims = np.zeros((N_MOVIE, N_MOVIE))
-    # for i in range(N_MOVIE):
-    #     for j in range(i, N_MOVIE):
-    #         num = 0
-    #         dem1 = 0
-    #         dem2 = 0
-    #         set_c_u = np.where((train_data[:, i] != 0) * (train_data[:, j]))[0]
-    #         for k in set_c_u:
-    #             num = num + sub_ratings[k][i] * sub_ratings[k][j]
-    #             dem1 = dem1 + sub_ratings[k][i] ** 2
-    #             dem2 = dem2 + sub_ratings[k][j] ** 2
-    #             sim[i, j] = num / sqrt(dem1 * dem2 + 10 ** -12)
 
     user_mean = train_data.sum(axis=1)/(train_data != 0).sum(axis=1)
 
@@ -68,20 +57,12 @@ def adj_cosine_sim(train_data):
             sim = cosine_sim(sub_ratings[i], sub_ratings[j])
             sims[i, j] = sim
             sims[j, i] = sim
-        # print i
-
-    print(sims)
 
     return sims
 
 
 def similarities(train_matrix):
     sim_matrix = adj_cosine_sim(train_matrix)
-
-    upper_tri = np.triu(sim_matrix, k=1)
-    upper_tri = upper_tri.T
-    sim_matrix = sim_matrix + upper_tri
-
     sim_matrix = np.where((sim_matrix < 0), 0, sim_matrix)
     return sim_matrix
 
