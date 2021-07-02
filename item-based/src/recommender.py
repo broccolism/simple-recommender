@@ -6,18 +6,31 @@ import numpy as np
 from math import sqrt
 from numpy import random
 from sklearn.metrics import mean_squared_error
-from sklearn.metrics.pairwise import cosine_similarity
 
-NAMES = ['userId', 'itemId', 'rating', 'timestamp']
+COLUMN_USERID = "userId"
+COLUMN_MOVIEID = "itemId"
+COLUMN_RATING = "rating"
+COLUMN_TIMESTAMP = "timestamp"
+
+TRAIN_COLUMNS = [COLUMN_USERID, COLUMN_MOVIEID,
+                 COLUMN_RATING, COLUMN_TIMESTAMP]
+MOVIES_COLUMNS = ["movieId", "title", "genre"]
+
+DATA_PATH = "../data/ml-1m/"
+RATINGS_PATH = "ratings.dat"
+MOVIES_PATH = "movies.dat"
+SEPERATOR = "::"
 N_USER = -1
 N_MOVIE = -1
+N_RECOMMENDATIONS = 5
 
 
 def init_data():
     global N_USER, N_MOVIE
-    train_data = pd.read_table('../data/ml-1m/ratings.dat',
-                               sep='::', header=None, names=NAMES)
-    train_data.drop(columns=['timestamp'], inplace=True)
+    train_data = pd.read_table(DATA_PATH + RATINGS_PATH,
+                               sep=SEPERATOR, header=None, names=TRAIN_COLUMNS)
+
+    train_data.drop(columns=[COLUMN_TIMESTAMP], inplace=True)
 
     N_USER = train_data.userId.max()
     N_MOVIE = train_data.itemId.max()
@@ -87,12 +100,26 @@ def err_rmse(test_matrix, pred_matrix):
     return rmse
 
 
+def get_recommendations(pred, user_id):
+    descending_indicies = np.argsort(
+        pred[user_id - 1])[(-1 * N_RECOMMENDATIONS):]
+    train_data = pd.read_table(DATA_PATH + MOVIES_PATH,
+                               sep=SEPERATOR, header=None, names=MOVIES_COLUMNS)
+
+    recommendations = [train_data.iloc[i] for i in descending_indicies]
+    return recommendations
+
+
 if __name__ == "__main__":
     train, test = init_data()
     print(f'done init data')
     sim = similarities(train)
     print(f'done sim')
-    pred = predictions(train, sim)
+    pred = np.copy(predictions(train, sim))
     print(f'done pred')
+    print(pred)
     err = err_rmse(test, pred)
-    print(f'RMSE = ', err)
+    print(f'done training. RMSE = ', err)
+
+    target_user = int(input("user id for recommendation: "))
+    print(get_recommendations(pred, target_user))
