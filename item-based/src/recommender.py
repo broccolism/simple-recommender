@@ -16,7 +16,7 @@ TRAIN_COLUMNS = [COLUMN_USERID, COLUMN_MOVIEID,
                  COLUMN_RATING, COLUMN_TIMESTAMP]
 MOVIES_COLUMNS = ["movieId", "title", "genre"]
 
-DATA_PATH = "./"
+DATA_PATH = "../data/ml-1m/"
 RATINGS_PATH = "ratings.dat"
 MOVIES_PATH = "movies.dat"
 SEPERATOR = "::"
