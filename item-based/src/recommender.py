@@ -120,5 +120,5 @@ if __name__ == "__main__":
     print(f'done pred')
     err = err_rmse(test, pred)
     print(f'done training. RMSE = ', err)
-    target_user = int(input("user id for recommendation: "))
+    target_user = int(input("user id for recommendation: ")) - 1
     print(get_recommendations(pred, target_user))
