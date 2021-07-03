@@ -27,7 +27,7 @@ N_RECOMMENDATIONS = 5
 
 def init_data():
     global N_USER, N_MOVIE
-    movie_data = pd.read_table(DATA_PATH + RATINGS_PATH,
+    train_data = pd.read_table(DATA_PATH + RATINGS_PATH,
                                sep=SEPERATOR, header=None, names=TRAIN_COLUMNS)
 
     train_data.drop(columns=[COLUMN_TIMESTAMP], inplace=True)
