@@ -16,7 +16,7 @@ TRAIN_COLUMNS = [COLUMN_USERID, COLUMN_MOVIEID,
                  COLUMN_RATING, COLUMN_TIMESTAMP]
 MOVIES_COLUMNS = ["movieId", "title", "genre"]
 
-DATA_PATH = "../data/ml-1m/"
+DATA_PATH = "./"
 RATINGS_PATH = "ratings.dat"
 MOVIES_PATH = "movies.dat"
 SEPERATOR = "::"
@@ -27,7 +27,7 @@ N_RECOMMENDATIONS = 5
 
 def init_data():
     global N_USER, N_MOVIE
-    train_data = pd.read_table(DATA_PATH + RATINGS_PATH,
+    movie_data = pd.read_table(DATA_PATH + RATINGS_PATH,
                                sep=SEPERATOR, header=None, names=TRAIN_COLUMNS)
 
     train_data.drop(columns=[COLUMN_TIMESTAMP], inplace=True)
@@ -103,10 +103,11 @@ def err_rmse(test_matrix, pred_matrix):
 def get_recommendations(pred, user_id):
     descending_indicies = np.argsort(
         pred[user_id - 1])[(-1 * N_RECOMMENDATIONS):]
-    train_data = pd.read_table(DATA_PATH + MOVIES_PATH,
+    print(descending_indicies)
+    movie_data = pd.read_table(DATA_PATH + MOVIES_PATH,
                                sep=SEPERATOR, header=None, names=MOVIES_COLUMNS)
 
-    recommendations = [train_data.iloc[i] for i in descending_indicies]
+    recommendations = movie_data.iloc[descending_indicies + 1]
     return recommendations
 
 
@@ -117,9 +118,7 @@ if __name__ == "__main__":
     print(f'done sim')
     pred = np.copy(predictions(train, sim))
     print(f'done pred')
-    print(pred)
     err = err_rmse(test, pred)
     print(f'done training. RMSE = ', err)
-
     target_user = int(input("user id for recommendation: "))
     print(get_recommendations(pred, target_user))
