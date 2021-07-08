@@ -16,7 +16,7 @@ TRAIN_COLUMNS = [COLUMN_USERID, COLUMN_MOVIEID,
                  COLUMN_RATING, COLUMN_TIMESTAMP]
 MOVIES_COLUMNS = ["movieId", "title", "genre"]
 
-DATA_PATH = "../data/ml-1m/"
+DATA_PATH = "../../data/ml-1m/"
 RATINGS_PATH = "ratings.dat"
 MOVIES_PATH = "movies.dat"
 SEPERATOR = "::"
@@ -59,14 +59,14 @@ def cosine_sim(a, b):
 
 
 def adj_cosine_sim(train_data):
-    sims = np.zeros((N_MOVIE, N_MOVIE))
+    sims = np.zeros((N_USER, N_USER))
 
-    user_mean = train_data.sum(axis=1)/(train_data != 0).sum(axis=1)
+    movie_mean = train_data.sum(axis=0)/(train_data != 0).sum(axis=0)
 
     sub_ratings = np.where(
-        (train_data != 0), train_data - user_mean[:, None], train_data)
-    for i in range(N_MOVIE):
-        for j in range(i, N_MOVIE):
+        (train_data != 0), train_data - movie_mean[None, :], train_data)
+    for i in range(N_USER):
+        for j in range(i, N_USER):
             sim = cosine_sim(sub_ratings[i], sub_ratings[j])
             sims[i, j] = sim
             sims[j, i] = sim
@@ -80,45 +80,9 @@ def similarities(train_matrix):
     return sim_matrix
 
 
-def predictions(train_matrix, sim_matrix):
-    top = train_matrix.dot(sim_matrix)
-    bottom = np.zeros((N_USER, N_MOVIE))
-    for user in range(N_USER):
-        nonzeros = np.nonzero(train_matrix[user])
-        for movie in range(N_MOVIE):
-            bottom[user, movie] = (sim_matrix[movie, nonzeros]).sum()
-
-    pred_matrix = top / bottom
-    np.nan_to_num(pred_matrix, copy=False)
-    return pred_matrix
-
-
-def err_rmse(test_matrix, pred_matrix):
-    mse = mean_squared_error(
-        test_matrix[test_matrix != 0], pred_matrix[test_matrix != 0])
-    rmse = sqrt(mse)
-    return rmse
-
-
-def get_recommendations(pred, user_id):
-    descending_indicies = np.argsort(
-        pred[user_id - 1])[(-1 * N_RECOMMENDATIONS):]
-    print(descending_indicies)
-    movie_data = pd.read_table(DATA_PATH + MOVIES_PATH,
-                               sep=SEPERATOR, header=None, names=MOVIES_COLUMNS)
-
-    recommendations = movie_data.iloc[descending_indicies + 1]
-    return recommendations
-
-
 if __name__ == "__main__":
     train, test = init_data()
     print(f'done init data')
     sim = similarities(train)
     print(f'done sim')
-    pred = np.copy(predictions(train, sim))
-    print(f'done pred')
-    err = err_rmse(test, pred)
-    print(f'done training. RMSE = ', err)
-    target_user = int(input("user id for recommendation: ")) - 1
-    print(get_recommendations(pred, target_user))
+    print(sim)
