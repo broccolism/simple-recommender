@@ -79,9 +79,18 @@ def similarities(train_matrix):
     return sim_matrix
 
 
+def get_similar_users(sim, user_id):
+    users = np.argsort(-sim[user_id])[:N_RECOMMENDATIONS]
+    print(users)
+
+    return users
+
+
 if __name__ == "__main__":
     train, test = init_data()
     print(f'done init data')
     sim = similarities(train)
     print(f'done sim')
-    print(sim)
+
+    target_id = int(input("user id > ")) - 1
+    print(get_similar_users(sim, target_id))
