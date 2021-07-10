@@ -16,10 +16,10 @@ TRAIN_COLUMNS = [COLUMN_USERID, COLUMN_MOVIEID,
                  COLUMN_RATING, COLUMN_TIMESTAMP]
 MOVIES_COLUMNS = ["movieId", "title", "genre"]
 
-DATA_PATH = "../../data/ml-1m/"
-RATINGS_PATH = "ratings.dat"
-MOVIES_PATH = "movies.dat"
-SEPERATOR = "::"
+DATA_PATH = "../../data/ml-latest-small/"
+RATINGS_PATH = "ratings.csv"
+MOVIES_PATH = "movies.csv"
+SEPERATOR = ","
 N_USER = -1
 N_MOVIE = -1
 N_RECOMMENDATIONS = 5
@@ -28,10 +28,9 @@ N_RECOMMENDATIONS = 5
 def init_data():
     global N_USER, N_MOVIE
     train_data = pd.read_table(DATA_PATH + RATINGS_PATH,
-                               sep=SEPERATOR, header=None, names=TRAIN_COLUMNS)
+                               sep=SEPERATOR, header=None, names=TRAIN_COLUMNS, skiprows=[0]).astype({COLUMN_USERID: np.float, COLUMN_MOVIEID: np.float, COLUMN_RATING: np.float}).astype({COLUMN_USERID: int, COLUMN_MOVIEID: int, COLUMN_RATING: np.float})
 
     train_data.drop(columns=[COLUMN_TIMESTAMP], inplace=True)
-
     N_USER = train_data.userId.max()
     N_MOVIE = train_data.itemId.max()
 
