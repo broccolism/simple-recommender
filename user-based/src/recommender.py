@@ -60,10 +60,10 @@ def cosine_sim(a, b):
 def adj_cosine_sim(train_data):
     sims = np.zeros((N_USER, N_USER))
 
-    movie_mean = train_data.sum(axis=0)/(train_data != 0).sum(axis=0)
+    user_mean = train_data.sum(axis=0)/(train_data != 0).sum(axis=0)
 
     sub_ratings = np.where(
-        (train_data != 0), train_data - movie_mean[None, :], train_data)
+        (train_data != 0), train_data - user_mean[None, :], train_data)
     for i in range(N_USER):
         for j in range(i, N_USER):
             sim = cosine_sim(sub_ratings[i], sub_ratings[j])
@@ -81,7 +81,6 @@ def similarities(train_matrix):
 
 def get_similar_users(sim, user_id):
     users = np.argsort(-sim[user_id])[:N_RECOMMENDATIONS]
-    print(users)
 
     return users
 
